@@ -83,32 +83,53 @@ You may already use Neon locally. Create a project at [neon.tech](https://neon.t
 
 ## 4. Deploy the frontend on Vercel
 
+Config lives in [`apps/web/vercel.json`](apps/web/vercel.json). Vercel reads it when **Root Directory** is set to `apps/web`.
+
+### Dashboard settings
+
 1. [vercel.com](https://vercel.com) → **Add New** → **Project** → import your repo.
-2. Settings:
+2. **Configure Project:**
 
 | Setting | Value |
 |---------|--------|
-| **Framework Preset** | Vite |
-| **Root Directory** | `apps/web` |
-| **Build Command** | `npm run build` |
-| **Output Directory** | `dist` |
+| **Framework Preset** | Vite *(auto-detected)* |
+| **Root Directory** | `apps/web` ← **required** |
+| **Build Command** | `npm run build` *(from vercel.json)* |
+| **Output Directory** | `dist` *(from vercel.json)* |
+| **Install Command** | `cd ../.. && npm install` *(from vercel.json — installs monorepo from repo root)* |
 
-3. **Environment Variables** (enable for **Production** and **Preview**):
+Leave **Node.js Version** at **20.x** (Project → Settings → General → Node.js Version).
 
-| Name | Value |
-|------|--------|
-| `VITE_API_BASE_URL` | `https://<your-service>.onrender.com` |
-| `VITE_CLERK_PUBLISHABLE_KEY` | `pk_test_…` or `pk_live_…` |
+### Environment variables
 
-4. Deploy and copy your site URL, e.g. `https://simba.vercel.app`.
+Add for **Production** and **Preview** (Settings → Environment Variables):
 
-5. In **Render** → your API service → **Environment**, set:
+| Name | Value | Example |
+|------|--------|---------|
+| `VITE_API_BASE_URL` | Your Render API URL (no trailing slash) | `https://simba-api.onrender.com` |
+| `VITE_CLERK_PUBLISHABLE_KEY` | Clerk publishable key | `pk_test_…` or `pk_live_…` |
 
+> Vite only exposes vars prefixed with `VITE_`. Redeploy after changing env vars.
+
+### What `vercel.json` does
+
+```json
+{
+  "installCommand": "cd ../.. && npm install",
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "rewrites": [{ "source": "/((?!assets/).*)", "destination": "/index.html" }]
+}
 ```
-WEB_ORIGIN=https://simba.vercel.app
-```
 
-Trigger a **Manual Deploy** on Render so CORS picks up the new origin.
+- **installCommand** — Runs from repo root so npm workspaces resolve correctly.
+- **rewrites** — Sends all routes (except `/assets/*`) to `index.html` for React Router (`/simba`, `/store/...`, etc.).
+
+### Deploy
+
+1. Click **Deploy**.
+2. Copy your URL, e.g. `https://simba.vercel.app`.
+3. On **Render**, set `WEB_ORIGIN` to that URL and redeploy the API.
 
 ---
 

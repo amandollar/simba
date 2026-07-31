@@ -218,7 +218,7 @@ Full step-by-step guide: **[DEPLOYMENT.md](DEPLOYMENT.md)**
 | Service | Platform |
 |---------|----------|
 | API | [Render](https://render.com) — Web Service (manual setup) |
-| Web | [Vercel](https://vercel.com) — root `apps/web` |
+| Web | [Vercel](https://vercel.com) — root `apps/web`, config [`apps/web/vercel.json`](apps/web/vercel.json) |
 | Database | [Neon](https://neon.tech) or Render Postgres (free) |
 
 Quick summary:

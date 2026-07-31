@@ -1,0 +1,9 @@
+export { AnalyticsPage } from "./AnalyticsPage";
+export { ConsultantPage } from "./ConsultantPage";
+export { CustomersPage } from "./CustomersPage";
+export { IssuesPage } from "./IssuesPage";
+export { OrdersPage } from "./OrdersPage";
+export { ProductsPage } from "./ProductsPage";
+export { ReviewsPage } from "./ReviewsPage";
+export { TimelinePage } from "./TimelinePage";
+export { GrowthPage } from "./simba/GrowthPage";

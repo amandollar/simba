@@ -1,0 +1,119 @@
+import { buildGrowthBrief } from "../../lib/growth-brief.js";
+import { db } from "../../lib/db.js";
+import {
+  saveGrowthPlan,
+  type GrowthPlanSummary,
+} from "../../lib/growth-plans.js";
+import { scoreIssue, type Effort, type Lens, type Severity } from "../../lib/scoring.js";
+import { getStoreSnapshot } from "../../lib/store-snapshot.js";
+import type { GrowthPlan, StoredGrowthPlan } from "../core/types.js";
+import { runGrowthAgent } from "../specialists/growth-agent.js";
+
+interface OpenIssueContext {
+  id: string;
+  title: string;
+  category: string;
+  severity: string;
+  fixSummary: string | null;
+  canAutofix: boolean;
+}
+
+function enrichActionsWithIssues(
+  plan: Pick<
+    GrowthPlan,
+    "headline" | "summary" | "focusThisWeek" | "quickWin" | "actions"
+  >,
+  openIssues: OpenIssueContext[]
+) {
+  const issueByTitle = new Map(
+    openIssues.map((issue) => [issue.title.trim().toLowerCase(), issue])
+  );
+
+  return {
+    ...plan,
+    actions: plan.actions.map((action) => {
+      if (!action.relatedIssueTitle) return action;
+
+      const issue = issueByTitle.get(
+        action.relatedIssueTitle.trim().toLowerCase()
+      );
+      if (!issue) return action;
+
+      return {
+        ...action,
+        relatedIssueId: issue.id,
+        relatedIssueCanAutofix: issue.canAutofix,
+        inAppAction: action.inAppAction ?? (issue.canAutofix ? "fixes" : action.inAppAction),
+      };
+    }),
+  };
+}
+
+export async function runGrowthOrchestrator(
+  merchantId: string
+): Promise<StoredGrowthPlan> {
+  const [store, latestAudit] = await Promise.all([
+    getStoreSnapshot(merchantId),
+    db.audit.findFirst({
+      where: { merchantId },
+      orderBy: { createdAt: "desc" },
+      include: {
+        issues: {
+          where: { status: "open" },
+        },
+      },
+    }),
+  ]);
+
+  const scoredIssues = (latestAudit?.issues ?? [])
+    .map((issue) => ({
+      raw: issue,
+      scored: scoreIssue({
+        category: issue.category as Lens,
+        title: issue.title,
+        description: issue.description,
+        severity: issue.severity as Severity,
+        confidence: issue.confidence,
+        effort: issue.effort as Effort,
+        canAutofix: issue.canAutofix,
+        fixSummary: issue.fixSummary ?? undefined,
+      }),
+    }))
+    .sort((a, b) => b.scored.priority - a.scored.priority)
+    .slice(0, 8);
+
+  const openIssues: OpenIssueContext[] = scoredIssues.map(({ raw, scored }) => ({
+    id: raw.id,
+    title: scored.title,
+    category: scored.category,
+    severity: scored.severity,
+    fixSummary: scored.fixSummary ?? null,
+    canAutofix: raw.canAutofix,
+  }));
+
+  const auditScore = latestAudit?.overallScore ?? null;
+  const brief = buildGrowthBrief(store, openIssues, auditScore);
+
+  const agentPlan = await runGrowthAgent({
+    store,
+    brief,
+    openIssues,
+    auditScore,
+  });
+
+  const enrichedPlan = enrichActionsWithIssues(agentPlan, openIssues);
+
+  const plan: GrowthPlan = {
+    ...enrichedPlan,
+    generatedAt: new Date().toISOString(),
+    storeStage: brief.storeStage,
+    stageLabel: brief.stageLabel,
+    stageDescription: brief.stageDescription,
+    signals: brief.signals,
+    opportunities: brief.opportunities,
+  };
+
+  return saveGrowthPlan(merchantId, plan);
+}
+
+export type { GrowthPlanSummary };

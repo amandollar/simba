@@ -1,0 +1,158 @@
+/* Landing page — scoped premium styles */
+
+.landing {
+  --landing-ink: #09090b;
+  --landing-ink-soft: #18181b;
+  --landing-glow: #6366f1;
+  --landing-glow-soft: #818cf8;
+  font-feature-settings: "cv11", "ss01";
+}
+
+.landing-display {
+  font-family: "Instrument Serif", Georgia, "Times New Roman", serif;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+}
+
+.landing-hero {
+  background-color: var(--landing-ink);
+}
+
+.landing-mesh {
+  background-image:
+    radial-gradient(
+      ellipse 80% 55% at 50% -20%,
+      color-mix(in srgb, var(--landing-glow) 28%, transparent),
+      transparent 60%
+    ),
+    radial-gradient(
+      ellipse 45% 35% at 100% 0%,
+      color-mix(in srgb, #a78bfa 14%, transparent),
+      transparent 55%
+    );
+}
+
+.landing-grid {
+  background-image:
+    linear-gradient(color-mix(in srgb, white 5%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, white 5%, transparent) 1px, transparent 1px);
+  background-size: 72px 72px;
+  mask-image: linear-gradient(to bottom, black 0%, black 55%, transparent 100%);
+}
+
+.landing-hero-fade {
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    color-mix(in srgb, var(--color-surface) 40%, transparent) 55%,
+    var(--color-surface) 100%
+  );
+}
+
+.landing-shine {
+  background: linear-gradient(
+    105deg,
+    transparent 40%,
+    color-mix(in srgb, white 8%, transparent) 50%,
+    transparent 60%
+  );
+  background-size: 200% 100%;
+  animation: landing-shine 10s ease-in-out infinite;
+}
+
+@keyframes landing-shine {
+  0%,
+  100% {
+    background-position: 200% 0;
+  }
+  50% {
+    background-position: -200% 0;
+  }
+}
+
+@keyframes landing-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.landing-fade-up {
+  animation: landing-fade-up 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.landing-fade-up-delay-1 {
+  animation-delay: 0.08s;
+}
+
+.landing-fade-up-delay-2 {
+  animation-delay: 0.16s;
+}
+
+.landing-fade-up-delay-3 {
+  animation-delay: 0.28s;
+}
+
+.landing-glass {
+  background: color-mix(in srgb, white 7%, transparent);
+  border: 1px solid color-mix(in srgb, white 12%, transparent);
+  backdrop-filter: blur(16px);
+}
+
+.landing-nav {
+  background: color-mix(in srgb, var(--landing-ink) 85%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, white 6%, transparent);
+  backdrop-filter: blur(12px);
+}
+
+.landing-card-glow {
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, white 10%, transparent),
+    0 20px 60px -16px color-mix(in srgb, var(--landing-glow) 30%, transparent),
+    0 8px 24px -8px rgba(0, 0, 0, 0.45);
+}
+
+.landing-btn-glow {
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--landing-glow-soft) 45%, transparent),
+    0 6px 24px -4px color-mix(in srgb, var(--landing-glow) 50%, transparent);
+}
+
+.landing-btn-glow:hover {
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--landing-glow-soft) 65%, transparent),
+    0 10px 32px -4px color-mix(in srgb, var(--landing-glow) 60%, transparent);
+}
+
+.landing-bento {
+  background: linear-gradient(
+    145deg,
+    var(--color-surface-raised) 0%,
+    color-mix(in srgb, var(--color-simba-soft) 40%, var(--color-surface-raised)) 100%
+  );
+}
+
+.landing-marquee {
+  animation: landing-marquee 30s linear infinite;
+}
+
+@keyframes landing-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.landing-cta-dark {
+  background-color: var(--landing-ink);
+}
+
+.landing-cta-dark .landing-mesh {
+  opacity: 0.9;
+}

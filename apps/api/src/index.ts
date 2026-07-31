@@ -1,5 +1,5 @@
 import "dotenv/config";
-import cors from "cors";
+import cors, { type CorsOptions } from "cors";
 import express from "express";
 import { clerkMiddleware } from "@clerk/express";
 import { auditsRouter, fixesRouter } from "./routes/audits.js";
@@ -10,18 +10,23 @@ import { merchantRouter } from "./routes/merchant.js";
 import { publicRouter } from "./routes/public.js";
 import { storeRouter } from "./routes/store.js";
 import { toClientError } from "./lib/client-error.js";
-import { isCorsOriginAllowed } from "./lib/cors-origins.js";
+import { isCorsOriginAllowed, logCorsRejection } from "./lib/cors-origins.js";
 
 const app = express();
 const port = Number(process.env.PORT ?? 4000);
 
-app.use(
-  cors({
-    origin(origin, callback) {
-      callback(null, isCorsOriginAllowed(origin));
-    },
-  })
-);
+const corsOptions: CorsOptions = {
+  origin(origin, callback) {
+    const allowed = isCorsOriginAllowed(origin);
+    if (!allowed && origin) logCorsRejection(origin);
+    callback(null, allowed);
+  },
+  methods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+};
+
+app.use(cors(corsOptions));
+app.options("*", cors(corsOptions));
 app.use(express.json());
 app.use(clerkMiddleware());
 

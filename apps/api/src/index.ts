@@ -10,17 +10,16 @@ import { merchantRouter } from "./routes/merchant.js";
 import { publicRouter } from "./routes/public.js";
 import { storeRouter } from "./routes/store.js";
 import { toClientError } from "./lib/client-error.js";
+import { isCorsOriginAllowed } from "./lib/cors-origins.js";
 
 const app = express();
 const port = Number(process.env.PORT ?? 4000);
 
 app.use(
   cors({
-    origin: [
-      "http://localhost:3000",
-      "http://localhost:3001",
-      process.env.WEB_ORIGIN,
-    ].filter(Boolean) as string[],
+    origin(origin, callback) {
+      callback(null, isCorsOriginAllowed(origin));
+    },
   })
 );
 app.use(express.json());
@@ -45,6 +44,6 @@ app.use((err: Error, _req: express.Request, res: express.Response, _next: expres
   res.status(500).json({ error: toClientError(err) });
 });
 
-app.listen(port, () => {
-  console.log(`Simba API listening on http://localhost:${port}`);
+app.listen(port, "0.0.0.0", () => {
+  console.log(`Simba API listening on port ${port}`);
 });

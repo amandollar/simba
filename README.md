@@ -211,13 +211,28 @@ http://localhost:3000/store/<slug>
 
 Checkout is guest-only — no customer accounts required on the storefront.
 
+## Deployment (Render + Vercel)
+
+Full step-by-step guide: **[DEPLOYMENT.md](DEPLOYMENT.md)**
+
+| Service | Platform |
+|---------|----------|
+| API | [Render](https://render.com) — Web Service (manual setup) |
+| Web | [Vercel](https://vercel.com) — root `apps/web` |
+| Database | [Neon](https://neon.tech) or Render Postgres (free) |
+
+Quick summary:
+
+1. Create **Postgres** (Neon or Render) and copy `DATABASE_URL`.
+2. **Render** → New **Web Service** from repo root; build `npm install && npm run db:push -w @simba/api && npm run build -w @simba/api`; start `npm run start -w @simba/api`.
+3. **Vercel** → root `apps/web`; set `VITE_API_BASE_URL` to your Render API URL.
+4. Set `WEB_ORIGIN` on Render to your Vercel URL; `ALLOW_VERCEL_PREVIEWS=true` for previews.
+5. Add your Vercel domain in **Clerk**.
+
 ## Production notes
 
-- Build the API: `npm run build -w apps/api` then `npm run start -w apps/api`
-- Build the web: `npm run build -w apps/web` — static output in `apps/web/dist`
-- Set `WEB_ORIGIN` to your deployed frontend URL
-- Use a managed PostgreSQL instance and set `DATABASE_URL`
 - Groq free tier has rate limits; the API queues AI calls with backoff
+- Render free tier sleeps when idle; first request after sleep can be slow
 
 ## License
 
